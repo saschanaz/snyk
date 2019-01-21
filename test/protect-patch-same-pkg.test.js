@@ -42,7 +42,10 @@ var patch = proxyquire('../src/lib/protect/patch', {
   },
   './apply-patch': proxyquire('../src/lib/protect/apply-patch', {
     'diff': {
-      applyPatches: execSpy
+      applyPatches: function (a, options) {
+        execSpy(a);
+        options.complete();
+      }
     }
   })
 });
