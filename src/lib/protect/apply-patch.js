@@ -26,7 +26,9 @@ function applyPatch(patch, vuln, live) {
       debug('Failed loading package.json of package about to be patched', err);
     }
 
-    diff.applyPatches(patch, {
+    var patchContent = fs.readFileSync(path.resolve(relative, patch), 'utf8');
+
+    diff.applyPatches(patchContent, {
       loadFile: function (index, callback) {
         try {
           if (!index.oldFileName) {
@@ -41,7 +43,7 @@ function applyPatch(patch, vuln, live) {
       patched: function (index, content, callback) {
         try {
           if (live) {
-            fs.writeFileSync(index.newFileName, content);
+            fs.writeFileSync(path.resolve(relative, index.newFileName), content);
           }
           callback();
         } catch (err) {
