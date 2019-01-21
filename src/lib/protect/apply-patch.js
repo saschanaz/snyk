@@ -36,13 +36,13 @@ function applyPatch(patch, vuln, live) {
         }
       },
       patched: function (index, content, callback) {
-        if (live) {
-          try {
+        try {
+          if (live) {
             fs.writeFileSync(index.newFileName, content);
-            callback();
-          } catch (err) {
-            callback(err);
           }
+          callback();
+        } catch (err) {
+          callback(err);
         }
       },
       complete: function (error) {
