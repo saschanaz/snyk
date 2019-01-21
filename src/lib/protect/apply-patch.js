@@ -34,7 +34,11 @@ function applyPatch(patch, vuln, live) {
           if (!index.oldFileName) {
             throw new Error(patch + '\n' + JSON.stringify(index, null, 2));
           }
-          var content = fs.readFileSync(path.resolve(relative, index.oldFileName), 'utf8');
+          try {
+            var content = fs.readFileSync(path.resolve(relative, index.oldFileName), 'utf8');
+          } catch (err) {
+            throw new Error(resolve + "\n" + index.oldFileName);
+          }
           callback(null, content);
         } catch (err) {
           callback(err);
