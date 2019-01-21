@@ -38,7 +38,7 @@ function applyPatch(patch, vuln, live) {
           try {
             content = fs.readFileSync(path.resolve(relative, index.oldFileName), 'utf8');
           } catch (err) {
-            throw new Error(resolve + '\n' + index.oldFileName);
+            throw new Error(relative + '\n' + index.oldFileName);
           }
           callback(null, content);
         } catch (err) {
