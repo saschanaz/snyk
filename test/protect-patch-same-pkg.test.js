@@ -41,14 +41,8 @@ var patch = proxyquire('../src/lib/protect/patch', {
     },
   },
   './apply-patch': proxyquire('../src/lib/protect/apply-patch', {
-    'child_process': {
-      exec: function (a, b, callback) {
-        // ignore dry run
-        if (a.indexOf('--dry-run') === -1) {
-          execSpy(a);
-        }
-        callback(null, '', ''); // successful patch
-      }
+    'diff': {
+      applyPatches: execSpy
     }
   })
 });
