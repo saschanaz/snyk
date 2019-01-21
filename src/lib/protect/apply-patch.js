@@ -32,7 +32,12 @@ function applyPatch(patch, vuln, live) {
       loadFile: function (index, callback) {
         try {
           var fileName = stripFirstSlash(index.oldFileName);
-          var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
+          var content;
+          try {
+            content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
+          } catch (err) {
+            throw new Error(relative + '\n' + index.oldFileName + '\n' + fileName);
+          }
           callback(null, content);
         } catch (err) {
           callback(err);
