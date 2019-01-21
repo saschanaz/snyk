@@ -64,7 +64,7 @@ function applyPatch(patch, vuln, live) {
 }
 
 function stripFirstSlash(fileName) {
-  return fileName.replace(/^[^\/]+\//, "");
+  return fileName.replace(/^[^\/]+\//, '');
 }
 
 function patchError(error, dir, vuln) {
