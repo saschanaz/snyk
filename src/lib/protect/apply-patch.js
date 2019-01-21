@@ -30,7 +30,7 @@ function applyPatch(patch, vuln, live) {
       loadFile: function (index, callback) {
         try {
           if (!index.oldFileName) {
-            throw new Error(patch + "\n" + JSON.stringify(index, null, 2));
+            throw new Error(patch + '\n' + JSON.stringify(index, null, 2));
           }
           var content = fs.readFileSync(path.resolve(relative, index.oldFileName), 'utf8');
           callback(null, content);
