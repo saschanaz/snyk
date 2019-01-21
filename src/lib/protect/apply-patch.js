@@ -31,15 +31,8 @@ function applyPatch(patch, vuln, live) {
     diff.applyPatches(patchContent, {
       loadFile: function (index, callback) {
         try {
-          if (!index.oldFileName) {
-            throw new Error(patch + '\n' + JSON.stringify(index, null, 2));
-          }
-          var content;
-          try {
-            content = fs.readFileSync(path.resolve(relative, index.oldFileName), 'utf8');
-          } catch (err) {
-            throw new Error(relative + '\n' + index.oldFileName);
-          }
+          var fileName = stripFirstSlash(index.oldFileName);
+          var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
           callback(null, content);
         } catch (err) {
           callback(err);
@@ -48,7 +41,8 @@ function applyPatch(patch, vuln, live) {
       patched: function (index, content, callback) {
         try {
           if (live) {
-            fs.writeFileSync(path.resolve(relative, index.newFileName), content);
+            var fileName = stripFirstSlash(index.newFileName);
+            fs.writeFileSync(path.resolve(relative, fileName), content);
           }
           callback();
         } catch (err) {
@@ -67,6 +61,10 @@ function applyPatch(patch, vuln, live) {
       },
     });
   });
+}
+
+function stripFirstSlash(fileName) {
+  return fileName.replace(/^[^\/]+\//, "");
 }
 
 function patchError(error, dir, vuln) {
