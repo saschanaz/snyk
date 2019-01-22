@@ -62,7 +62,7 @@ function jsDiff(patchContent, cwd, relative, dryRun) {
       patched: function (index, content, callback) {
         try {
           if (content === false) {
-            throw new Error('A patch hunk didn\'t fit anywhere');
+            throw new Error('A patch hunk didn\'t fit anywhere\n' + JSON.stringify(index, null, 2));
           }
           if (!dryRun) {
             var newFileName = stripFirstSlash(index.newFileName);
@@ -123,10 +123,10 @@ function patchError(error, dir, vuln) {
 
       // this is a general "patch failed", since we already check if the
       // patch was applied via a flag, this means something else went
+      // wrong, so we'll ask the user for help to diagnose.
       // var filename = path.relative(process.cwd(), dir);
       // error = new Error('"' + filename + '" (' + id + ')');
       // error.code = 'FAIL_PATCH';
-      // wrong, so we'll ask the user for help to diagnose.
 
       reject(error);
     });
