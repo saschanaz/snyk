@@ -28,6 +28,22 @@ function applyPatch(patch, vuln, live) {
 
     var patchContent = fs.readFileSync(path.resolve(relative, patch), 'utf8');
 
+    jsDiff(patchContent, cwd, relative, true).then(function () {
+      if (live) {
+        return jsDiff(patchContent, cwd, relative, false);
+      }
+    }).then(function () {
+      debug('patch succeed');
+      resolve();
+    }).catch(function (error) {
+      debug('patch command failed', relative, error);
+      patchError(error, relative, vuln).catch(reject);
+    });
+  });
+}
+
+function jsDiff(patchContent, cwd, relative, dryRun) {
+  return new Promise(function (resolve, reject) {
     diff.applyPatches(patchContent, {
       loadFile: function (index, callback) {
         try {
@@ -45,9 +61,16 @@ function applyPatch(patch, vuln, live) {
       },
       patched: function (index, content, callback) {
         try {
-          if (live) {
-            var fileName = stripFirstSlash(index.newFileName);
-            fs.writeFileSync(path.resolve(relative, fileName), content);
+          if (content === false) {
+            throw new Error('A patch hunk didn\'t fit anywhere');
+          }
+          if (!dryRun) {
+            var newFileName = stripFirstSlash(index.newFileName);
+            var oldFileName = stripFirstSlash(index.oldFileName);
+            if (newFileName !== oldFileName) {
+              fs.unlinkSync(path.resolve(relative, oldFileName));
+            }
+            fs.writeFileSync(path.resolve(relative, newFileName), content);
           }
           callback();
         } catch (err) {
@@ -56,13 +79,10 @@ function applyPatch(patch, vuln, live) {
       },
       complete: function (error) {
         if (error) {
-          debug('patch command failed', relative, error);
-          return patchError(error, relative, vuln).catch(reject);
+          reject(error);
+        } else {
+          resolve();
         }
-
-        debug('patch succeed');
-
-        resolve();
       },
     });
   });
@@ -103,10 +123,10 @@ function patchError(error, dir, vuln) {
 
       // this is a general "patch failed", since we already check if the
       // patch was applied via a flag, this means something else went
-      // wrong, so we'll ask the user for help to diganose.
       // var filename = path.relative(process.cwd(), dir);
       // error = new Error('"' + filename + '" (' + id + ')');
       // error.code = 'FAIL_PATCH';
+      // wrong, so we'll ask the user for help to diagnose.
 
       reject(error);
     });
