@@ -40,14 +40,10 @@ var patch = proxyquire('../src/lib/protect/patch', {
       };
     },
   },
-  './apply-patch': proxyquire('../src/lib/protect/apply-patch', {
-    'diff': {
-      applyPatches: function (a, options) {
-        execSpy(a);
-        options.complete();
-      }
-    }
-  })
+  './apply-patch': function (patch) {
+    execSpy(patch);
+    return Promise.resolve();
+  }
 });
 
 test('if two patches for same package selected, only newest runs', function (t) {
