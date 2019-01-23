@@ -28,11 +28,7 @@ function applyPatch(patch, vuln, live) {
 
     var patchContent = fs.readFileSync(path.resolve(relative, patch), 'utf8');
 
-    jsDiff(patchContent, cwd, relative, true).then(function () {
-      if (live) {
-        return jsDiff(patchContent, cwd, relative, false);
-      }
-    }).then(function () {
+    jsDiff(patchContent, cwd, relative, live).then(function () {
       debug('patch succeed');
       resolve();
     }).catch(function (error) {
@@ -42,19 +38,19 @@ function applyPatch(patch, vuln, live) {
   });
 }
 
-function jsDiff(patchContent, cwd, relative, dryRun) {
+function jsDiff(patchContent, cwd, relative, live) {
+  const files = {};
   return new Promise(function (resolve, reject) {
     diff.applyPatches(patchContent, {
       loadFile: function (index, callback) {
         try {
           var fileName = stripFirstSlash(index.oldFileName);
-          var content;
-          try {
-            content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
-          } catch (err) {
-            throw new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName);
+          if (files[fileName]) {
+            callback(null, files[fileName]);
+          } else {
+            var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
+            callback(null, content);
           }
-          callback(null, content);
         } catch (err) {
           callback(err);
         }
@@ -62,16 +58,14 @@ function jsDiff(patchContent, cwd, relative, dryRun) {
       patched: function (index, content, callback) {
         try {
           if (content === false) {
-            throw new Error('A patch hunk didn\'t fit anywhere\n' + JSON.stringify(index, null, 2));
+            throw new Error('Found a mismatching patch\n' + JSON.stringify(index, null, 2));
           }
-          if (!dryRun) {
-            var newFileName = stripFirstSlash(index.newFileName);
-            var oldFileName = stripFirstSlash(index.oldFileName);
-            if (newFileName !== oldFileName) {
-              fs.unlinkSync(path.resolve(relative, oldFileName));
-            }
-            fs.writeFileSync(path.resolve(relative, newFileName), content);
+          var newFileName = stripFirstSlash(index.newFileName);
+          var oldFileName = stripFirstSlash(index.oldFileName);
+          if (newFileName !== oldFileName) {
+            files[oldFileName] = null;
           }
+          files[newFileName] = content;
           callback();
         } catch (err) {
           callback(err);
@@ -85,11 +79,26 @@ function jsDiff(patchContent, cwd, relative, dryRun) {
       },
       complete: function (error) {
         if (error) {
-          reject(error);
-        } else {
-          resolve();
+          return reject(error);
         }
-      },
+        if (!live) {
+          return resolve();
+        }
+        try {
+          for (var fileName of files) {
+            if (files[fileName] === null) {
+              fs.unlinkSync(path.resolve(relative, fileName));
+            }
+            fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
+          }
+          resolve();
+        } catch (err) {
+          if (err.code === 'ENOENT') {
+            return reject(new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName));
+          }
+          reject(err);
+        }
+      }
     });
   });
 }
