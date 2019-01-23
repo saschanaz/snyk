@@ -92,7 +92,7 @@ function jsDiff(patchContent, cwd, relative, live) {
             try {
               fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
             } catch (err) {
-              throw new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName);
+              throw new Error(cwd + '\n' + relative + '\n' + fileName);
             }
           }
           resolve();
