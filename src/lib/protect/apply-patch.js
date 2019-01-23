@@ -89,16 +89,17 @@ function jsDiff(patchContent, cwd, relative, live) {
             if (files[fileName] === null) {
               fs.unlinkSync(path.resolve(relative, fileName));
             }
-            fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
+            try {
+              fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
+            } catch (err) {
+              throw new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName);
+            }
           }
           resolve();
         } catch (err) {
-          if (err.code === 'ENOENT') {
-            return reject(new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName));
-          }
           reject(err);
         }
-      }
+      },
     });
   });
 }
