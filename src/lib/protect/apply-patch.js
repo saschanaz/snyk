@@ -46,10 +46,13 @@ function jsDiff(patchContent, cwd, relative, live) {
         try {
           var fileName = stripFirstSlash(index.oldFileName);
           if (files[fileName]) {
-            callback(null, files[fileName]);
-          } else {
+            return callback(null, files[fileName]);
+          }
+          try {
             var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
             callback(null, content);
+          } catch (err) {
+            throw new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName);
           }
         } catch (err) {
           callback(err);
@@ -89,11 +92,7 @@ function jsDiff(patchContent, cwd, relative, live) {
             if (files[fileName] === null) {
               fs.unlinkSync(path.resolve(relative, fileName));
             }
-            try {
-              fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
-            } catch (err) {
-              throw new Error(cwd + '\n' + relative + '\n' + fileName);
-            }
+            fs.writeFileSync(path.resolve(relative, fileName), files[fileName]);
           }
           resolve();
         } catch (err) {
