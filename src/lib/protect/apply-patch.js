@@ -28,7 +28,7 @@ function applyPatch(patch, vuln, live) {
 
     var patchContent = fs.readFileSync(path.resolve(relative, patch), 'utf8');
 
-    jsDiff(patchContent, cwd, relative, live).then(function () {
+    jsDiff(patchContent, relative, live).then(function () {
       debug('patch succeed');
       resolve();
     }).catch(function (error) {
@@ -38,7 +38,7 @@ function applyPatch(patch, vuln, live) {
   });
 }
 
-function jsDiff(patchContent, cwd, relative, live) {
+function jsDiff(patchContent, relative, live) {
   const files = {};
   return new Promise(function (resolve, reject) {
     diff.applyPatches(patchContent, {
@@ -48,12 +48,8 @@ function jsDiff(patchContent, cwd, relative, live) {
           if (files[fileName]) {
             return callback(null, files[fileName]);
           }
-          try {
-            var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
-            callback(null, content);
-          } catch (err) {
-            throw new Error(cwd + '\n' + relative + '\n' + index.oldFileName + '\n' + fileName);
-          }
+          var content = fs.readFileSync(path.resolve(relative, fileName), 'utf8');
+          callback(null, content);
         } catch (err) {
           callback(err);
         }

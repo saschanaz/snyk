@@ -123,8 +123,6 @@ function npm(method, packages, dir) {
       if (error) {
         return reject(error);
       }
-      
-      console.log(stdout, stderr);
 
       if (stderr.indexOf('ERR!') !== -1) {
         return reject(new Error(stderr.trim()));
