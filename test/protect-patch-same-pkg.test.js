@@ -51,7 +51,7 @@ test('if two patches for same package selected, only newest runs', function (t) 
   var tasks = toTasks(answers).patch;
   return patch(tasks, true).then(function (res) {
     t.equal(Object.keys(res.patch).length, tasks.length, 'two vulns went in, two came out');
-    t.match(execSpy.args[0], new RegExp(latestId), 'correct patch picked' + execSpy.args[0]);
+    t.match(execSpy.args[0], new RegExp(latestId), 'correct patch picked');
     t.equal(execSpy.callCount, 1, 'patch only applied once');
   }).then(function () {
     // 2nd test

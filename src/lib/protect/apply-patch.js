@@ -139,9 +139,9 @@ function patchError(error, dir, vuln) {
       // this is a general "patch failed", since we already check if the
       // patch was applied via a flag, this means something else went
       // wrong, so we'll ask the user for help to diagnose.
-      // var filename = path.relative(process.cwd(), dir);
-      // error = new Error('"' + filename + '" (' + id + ')');
-      // error.code = 'FAIL_PATCH';
+      var filename = path.relative(process.cwd(), dir);
+      error = new Error('"' + filename + '" (' + id + ')');
+      error.code = 'FAIL_PATCH';
 
       reject(error);
     });
