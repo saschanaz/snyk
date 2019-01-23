@@ -77,6 +77,12 @@ function jsDiff(patchContent, cwd, relative, dryRun) {
           callback(err);
         }
       },
+      compareLine: function (_, line, operation, patchContent) {
+        if (operation === ' ') {
+          return true;
+        }
+        return line === patchContent;
+      },
       complete: function (error) {
         if (error) {
           reject(error);
